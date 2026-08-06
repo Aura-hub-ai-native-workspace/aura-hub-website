@@ -24,19 +24,31 @@ The full set (`01`, `03`, `04`, `07`–`13`) is used across the hero, product sh
 
 ## Deployment
 
-This repository is ready to deploy as-is to any static host — no build step, no dependencies.
+This repository is ready to deploy as-is to any static host — no build step, no application dependencies.
 
-### Cloudflare Pages
+### Cloudflare (Workers Static Assets — current default)
 
-1. Connect this repository in the Cloudflare Pages dashboard.
-2. Framework preset: **None**
-3. Build command: *(leave empty)*
-4. Build output directory: `/`
-5. Deploy.
+Cloudflare has moved new "Workers & Pages" projects onto **Workers with Static Assets**, the successor to classic Pages. `wrangler.jsonc` in this repo configures that for you:
 
-Cloudflare will serve `index.html` directly with no build phase. `_headers` (security + caching rules) and `robots.txt`/`sitemap.xml` are picked up automatically — Cloudflare Pages requires no extra configuration for them.
+```jsonc
+{
+  "name": "aura-hub-website",
+  "compatibility_date": "2026-08-07",
+  "assets": { "directory": "./", "not_found_handling": "404-page" }
+}
+```
 
-Since this repository has no `wrangler.toml`, no `package.json`, and no Workers code, Cloudflare correctly detects it as a static site as long as it's connected on its own — do not connect it as a subfolder of the main `aura-hub` monorepo, which mixes in the desktop app's Node tooling and causes Cloudflare to misdetect the project type.
+There's no Worker script (`main` is intentionally omitted) — this is asset-serving only, not compute. To deploy:
+
+1. In the Cloudflare dashboard: **Workers & Pages → Create application → Connect to Git**, select this repo (`aura-hub-website`).
+2. Leave the **Build command** empty and the **Deploy command** as the prefilled `npx wrangler deploy` — it reads `wrangler.jsonc` automatically.
+3. Deploy. `_headers` (security + caching) and `robots.txt`/`sitemap.xml` are picked up natively from the asset directory, same as they were under Pages.
+
+Connect this repo on its own — not as a subfolder of the `aura-hub` monorepo, whose Node/Tauri tooling caused Cloudflare to misdetect the project type before the site was split out.
+
+### Classic Cloudflare Pages (if still available on your account)
+
+Framework preset **None**, build command empty, output directory `/` — works identically without needing `wrangler.jsonc` at all.
 
 ### Other static hosts
 
