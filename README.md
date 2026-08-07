@@ -86,7 +86,7 @@ Edit `index.html` directly; it's plain HTML/CSS/JS. To update a screenshot, repl
 ## Links
 
 - Main project: [github.com/Aura-hub-ai-native-workspace/aura-hub](https://github.com/Aura-hub-ai-native-workspace/aura-hub)
-- Live site: [aurahub.is-a.dev](https://aurahub.is-a.dev) *(once Cloudflare Pages is connected — see Deployment above)*
+- Live site: [aurahub.is-a.dev](https://aurahub.is-a.dev) *(pending custom domain attachment — currently deployed at [aura-hub-website.gokulanand744.workers.dev](https://aura-hub-website.gokulanand744.workers.dev), see Deployment above)*
 - Contact: hello@aurahub.dev
 
 ## License
