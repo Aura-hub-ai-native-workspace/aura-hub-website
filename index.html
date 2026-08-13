@@ -132,6 +132,35 @@
   .dl-btns { display: flex; flex-direction: column; gap: 10px; }
   .dl-btns .btn { width: 100%; }
   .dl-meta { font-size: 11.8px; color: var(--text-subtle); margin: auto 0 0; padding-top: 16px; line-height: 1.5; }
+  /* download statistics — hidden until real numbers arrive */
+  .dl-stats {
+    display: none; margin-top: 30px; padding: 22px 26px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--radius-md);
+    align-items: baseline; gap: 34px; flex-wrap: wrap;
+  }
+  .dl-stats.show { display: flex; }
+  .dl-stat-total .n {
+    font-size: 30px; font-weight: 700; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .dl-stat-total .k { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .dl-stat-split { display: flex; gap: 26px; flex-wrap: wrap; }
+  .dl-stat { min-width: 62px; }
+  .dl-stat .n {
+    font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2;
+  }
+  .dl-stat .k { font-size: 11.5px; color: var(--text-subtle); margin-top: 3px; }
+  .dl-stats-note {
+    flex-basis: 100%; font-size: 11.5px; color: var(--text-subtle);
+    border-top: 1px solid var(--line); padding-top: 13px; margin: 2px 0 0; line-height: 1.55;
+  }
+  .dl-stats-note a { color: var(--accent); }
+  .dl-stats-note a:hover { text-decoration: underline; }
+  @media (max-width: 620px) {
+    .dl-stats { gap: 20px; padding: 20px; }
+    .dl-stat-split { gap: 18px; }
+  }
+
   .dl-notes {
     margin-top: 34px; padding: 22px 24px; background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius-md);
@@ -649,6 +678,24 @@
       </article>
     </div>
 
+    <!--
+      Download statistics. Every number here is read live from GitHub's
+      public Release API at page load — there are no counts in this markup,
+      and the block stays hidden unless real data arrives.
+    -->
+    <div class="dl-stats" id="dl-stats" hidden>
+      <div class="dl-stat-total">
+        <div class="n" id="dl-stat-total">—</div>
+        <div class="k">Downloads</div>
+      </div>
+      <div class="dl-stat-split">
+        <div class="dl-stat"><div class="n" id="dl-stat-windows">—</div><div class="k">Windows</div></div>
+        <div class="dl-stat"><div class="n" id="dl-stat-linux">—</div><div class="k">Linux</div></div>
+        <div class="dl-stat"><div class="n" id="dl-stat-macos">—</div><div class="k">macOS</div></div>
+      </div>
+      <p class="dl-stats-note" id="dl-stats-note"></p>
+    </div>
+
     <div class="dl-notes">
       <h4>Before you install</h4>
       <ul>
@@ -825,6 +872,87 @@
       document.getElementById('dl-reco-name').textContent = os.name;
       document.getElementById('dl-reco').classList.add('show');
     }
+  })();
+
+  /* ── download statistics ─────────────────────────────────────────────
+     Real numbers, from the only system that already counts real downloads:
+     GitHub increments an asset's `download_count` when the asset itself is
+     fetched. Not when this page loads, not when it is refreshed, not when a
+     button is clicked — when the file is actually served.
+
+     That is why this reads GitHub rather than counting clicks here. A
+     click-counting endpoint would need a Worker and a KV namespace, would
+     measure intent rather than delivery, and would produce a second number
+     that disagrees with the one on the release page. This has no backend,
+     no database, no credentials and no tracking of any kind: the browser
+     asks a public, unauthenticated, CORS-enabled endpoint for a number that
+     GitHub already publishes.
+
+     Nothing about the visitor is collected, sent or stored. No cookie, no
+     identifier, no IP retained by us — the request carries no state, and we
+     receive only aggregate totals. The counts are per-asset and are mapped
+     to platforms below; the file names come from RELEASE, so a new release
+     needs no change here.
+
+     Honest labelling: these are DOWNLOADS, not users. One person may
+     download twice, CI and mirrors download too, and GitHub does not
+     de-duplicate. We do not claim unique downloaders, because this data
+     cannot support that claim.                                          */
+  (function downloadStats() {
+    var PLATFORM = {
+      linuxAppImage: 'linux', linuxDeb: 'linux', windows: 'windows',
+      macosArm64: 'macos', macosX64: 'macos'
+    };
+    // Which asset filename belongs to which platform, derived from RELEASE.
+    var assetPlatform = {};
+    for (var key in RELEASE.assets) {
+      if (Object.prototype.hasOwnProperty.call(RELEASE.assets, key)) {
+        assetPlatform[RELEASE.assets[key]] = PLATFORM[key];
+      }
+    }
+
+    var api = 'https://api.github.com/repos/'
+      + RELEASE.repo.replace('https://github.com/', '')
+      + '/releases/tags/v' + RELEASE.version;
+
+    function fmt(n) { return n.toLocaleString('en-US'); }
+
+    fetch(api, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+      .then(function (release) {
+        if (!release || !Array.isArray(release.assets)) throw new Error('unexpected payload');
+        var counts = { total: 0, windows: 0, linux: 0, macos: 0 };
+        var matched = 0;
+        release.assets.forEach(function (a) {
+          var platform = assetPlatform[a.name];
+          if (!platform) return;                    // ignore anything not ours
+          var n = typeof a.download_count === 'number' ? a.download_count : 0;
+          counts[platform] += n;
+          counts.total += n;
+          matched++;
+        });
+        // If GitHub returned nothing recognisable, show nothing rather than a zero.
+        if (!matched) throw new Error('no matching assets');
+
+        document.getElementById('dl-stat-total').textContent = fmt(counts.total);
+        document.getElementById('dl-stat-windows').textContent = fmt(counts.windows);
+        document.getElementById('dl-stat-linux').textContent = fmt(counts.linux);
+        document.getElementById('dl-stat-macos').textContent = fmt(counts.macos);
+        document.getElementById('dl-stats-note').innerHTML =
+          'Live count of AURA Hub v' + RELEASE.version + ' release assets downloaded from GitHub, '
+          + 'across all ' + matched + ' installers. These are downloads, not unique people — '
+          + 'one person may download more than once, and automated mirrors are included. '
+          + '<a href="' + RELEASE.releaseUrl + '" rel="noopener">Verify on the release page</a>.';
+
+        var box = document.getElementById('dl-stats');
+        box.removeAttribute('hidden');
+        box.classList.add('show');
+      })
+      .catch(function () {
+        /* Rate-limited, offline, or GitHub unavailable. The block stays
+           hidden: no number is better than a wrong or stale one, and the
+           downloads themselves are unaffected. */
+      });
   })();
 
   // The download CTAs now go to the real downloads above. The early-access
