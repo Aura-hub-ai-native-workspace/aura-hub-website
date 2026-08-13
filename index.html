@@ -132,6 +132,35 @@
   .dl-btns { display: flex; flex-direction: column; gap: 10px; }
   .dl-btns .btn { width: 100%; }
   .dl-meta { font-size: 11.8px; color: var(--text-subtle); margin: auto 0 0; padding-top: 16px; line-height: 1.5; }
+  /* hero download counter — hidden until real numbers arrive */
+  .hero-stats {
+    display: none; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin: 26px auto 0; padding: 11px 20px; width: fit-content;
+    background: var(--surface-glass); border: 1px solid var(--line);
+    border-radius: 100px; backdrop-filter: blur(12px);
+    font-size: 13.5px; color: var(--text-muted);
+    transition: border-color 0.3s var(--ease);
+  }
+  .hero-stats.show { display: inline-flex; }
+  .hero-stats:hover { border-color: var(--line-strong); }
+  .hero-stats b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hero-stats-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #34d399; flex: none;
+    box-shadow: 0 0 0 0 rgba(52,211,153,0.6); animation: hero-pulse 2.4s var(--ease) infinite;
+  }
+  @keyframes hero-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+    70% { box-shadow: 0 0 0 7px rgba(52,211,153,0); }
+    100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+  }
+  .hero-stats-sep { width: 1px; height: 15px; background: var(--line-strong); flex: none; }
+  .hero-stats-split { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-subtle); font-size: 12.8px; }
+  @media (max-width: 560px) {
+    .hero-stats { gap: 10px; padding: 10px 16px; font-size: 12.8px; }
+    .hero-stats-sep { display: none; }
+    .hero-stats-split { gap: 12px; }
+  }
+
   /* download statistics — hidden until real numbers arrive */
   .dl-stats {
     display: none; margin-top: 30px; padding: 22px 26px; background: var(--surface);
@@ -442,6 +471,23 @@
       <button class="btn btn-primary btn-lg" id="btn-download-hero">Download AURA Hub</button>
       <a class="btn btn-secondary btn-lg" href="#demo">Watch Demo</a>
     </div>
+
+    <!--
+      Live download counter. Same real GitHub figures as the detailed block
+      in the download section — one fetch fills both. Ships with no numbers
+      and stays hidden unless real data arrives.
+    -->
+    <a class="hero-stats" id="hero-stats" href="#download" hidden>
+      <span class="hero-stats-dot"></span>
+      <span class="hero-stats-total"><b id="hero-stat-total"></b> downloads</span>
+      <span class="hero-stats-sep"></span>
+      <span class="hero-stats-split">
+        <span>Windows <b id="hero-stat-windows"></b></span>
+        <span>Linux <b id="hero-stat-linux"></b></span>
+        <span>macOS <b id="hero-stat-macos"></b></span>
+      </span>
+    </a>
+
     <div class="hero-shot-wrap">
       <div class="hero-shot"><img src="assets/screenshots/01-app-shell-home.png" alt="AURA Hub product interface" /></div>
       <div class="hero-glow-line"></div>
@@ -947,6 +993,17 @@
         var box = document.getElementById('dl-stats');
         box.removeAttribute('hidden');
         box.classList.add('show');
+
+        // The same figures, surfaced at the top of the page. One fetch fills
+        // both; the hero shows the headline number, the download section
+        // keeps the detail and the caveat.
+        document.getElementById('hero-stat-total').textContent = fmt(counts.total);
+        document.getElementById('hero-stat-windows').textContent = fmt(counts.windows);
+        document.getElementById('hero-stat-linux').textContent = fmt(counts.linux);
+        document.getElementById('hero-stat-macos').textContent = fmt(counts.macos);
+        var hero = document.getElementById('hero-stats');
+        hero.removeAttribute('hidden');
+        hero.classList.add('show');
       })
       .catch(function () {
         /* Rate-limited, offline, or GitHub unavailable. The block stays
