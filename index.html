@@ -131,6 +131,13 @@
      mid-card. The meta line takes the slack and stays bottom-aligned. */
   .dl-btns { display: flex; flex-direction: column; gap: 10px; }
   .dl-btns .btn { width: 100%; }
+  /* One download and the one line that says what choosing it means. */
+  .dl-opt { display: flex; flex-direction: column; gap: 7px; }
+  .dl-opt-hint { font-size: 11.8px; color: var(--text-subtle); text-align: center; line-height: 1.4; }
+  .dl-explain {
+    font-size: 12.2px; color: var(--text-muted); line-height: 1.6;
+    margin: 18px 0 0; padding-top: 15px; border-top: 1px solid var(--line);
+  }
   .dl-meta { font-size: 11.8px; color: var(--text-subtle); margin: auto 0 0; padding-top: 16px; line-height: 1.5; }
   /* hero download counter — hidden until real numbers arrive */
   .hero-stats {
@@ -689,10 +696,26 @@
           <span class="dl-badge">Recommended</span>
         </div>
         <p class="dl-arch">x64</p>
+        <!--
+          .deb leads because it is the one that installs: it puts AURA Hub
+          in the application launcher with its icon, the way any other
+          desktop application arrives. The AppImage stays, one tap away,
+          for people who want a portable binary.
+        -->
         <div class="dl-btns">
-          <a class="btn btn-primary" id="dl-linux-appimage" href="#">Download AppImage</a>
-          <a class="btn btn-secondary" id="dl-linux-deb" href="#">Download .deb</a>
+          <div class="dl-opt">
+            <a class="btn btn-primary" id="dl-linux-deb" href="#">Download .deb</a>
+            <span class="dl-opt-hint">Recommended — install AURA Hub</span>
+          </div>
+          <div class="dl-opt">
+            <a class="btn btn-secondary" id="dl-linux-appimage" href="#">Download AppImage</a>
+            <span class="dl-opt-hint">Portable — no installation</span>
+          </div>
         </div>
+        <p class="dl-explain">The .deb installs AURA Hub into your normal application
+          launcher, with its icon. The AppImage runs from wherever you put it without
+          installing, and may need AppImage integration to appear in your launcher,
+          depending on your desktop.</p>
         <p class="dl-meta" id="dl-meta-linux"></p>
       </article>
 
@@ -890,7 +913,7 @@
     document.getElementById('dl-version').textContent = 'v' + RELEASE.version;
     document.getElementById('dl-release-link').href = RELEASE.releaseUrl;
     var s = RELEASE.sizes;
-    document.getElementById('dl-meta-linux').textContent = 'AppImage ' + s.linuxAppImage + ' · .deb ' + s.linuxDeb;
+    document.getElementById('dl-meta-linux').textContent = '.deb ' + s.linuxDeb + ' · AppImage ' + s.linuxAppImage;
     document.getElementById('dl-meta-windows').textContent = 'NSIS installer · ' + s.windows;
     document.getElementById('dl-meta-macos').textContent = 'Apple Silicon ' + s.macosArm64 + ' · Intel ' + s.macosX64;
 
