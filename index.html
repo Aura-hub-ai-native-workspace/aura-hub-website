@@ -697,25 +697,29 @@
         </div>
         <p class="dl-arch">x64</p>
         <!--
-          .deb leads because it is the one that installs: it puts AURA Hub
-          in the application launcher with its icon, the way any other
-          desktop application arrives. The AppImage stays, one tap away,
-          for people who want a portable binary.
+          Neither option leads by default. The .deb installs only on
+          Debian-family systems — on Arch, Fedora or openSUSE there is no
+          dpkg to open it, and a desktop with nothing registered for
+          `application/vnd.debian.binary-package` hands the file back to the
+          browser, which downloads it again. The AppImage runs on all of
+          them. So the recommendation is decided at runtime by
+          `recommendLinuxFormat()` below, and until it decides, the markup
+          claims nothing.
         -->
         <div class="dl-btns">
           <div class="dl-opt">
-            <a class="btn btn-primary" id="dl-linux-deb" href="#">Download .deb</a>
-            <span class="dl-opt-hint">Recommended — install AURA Hub</span>
+            <a class="btn btn-secondary" id="dl-linux-deb" href="#">Download .deb</a>
+            <span class="dl-opt-hint" id="dl-hint-deb">Debian, Ubuntu, Mint, Pop!_OS</span>
           </div>
           <div class="dl-opt">
             <a class="btn btn-secondary" id="dl-linux-appimage" href="#">Download AppImage</a>
-            <span class="dl-opt-hint">Portable — no installation</span>
+            <span class="dl-opt-hint" id="dl-hint-appimage">Runs on any distribution</span>
           </div>
         </div>
-        <p class="dl-explain">The .deb installs AURA Hub into your normal application
-          launcher, with its icon. The AppImage runs from wherever you put it without
-          installing, and may need AppImage integration to appear in your launcher,
-          depending on your desktop.</p>
+        <p class="dl-explain" id="dl-explain-linux">The .deb installs AURA Hub into your
+          application launcher with its icon, on Debian-family systems only. The AppImage
+          runs from wherever you put it, on any distribution, without installing — and may
+          need AppImage integration to appear in your launcher, depending on your desktop.</p>
         <p class="dl-meta" id="dl-meta-linux"></p>
       </article>
 
@@ -940,6 +944,66 @@
       if (card) card.classList.add('recommended');
       document.getElementById('dl-reco-name').textContent = os.name;
       document.getElementById('dl-reco').classList.add('show');
+      if (os.id === 'linux') recommendLinuxFormat(hay);
+    }
+
+    /* Which Linux download to lead with.
+       ------------------------------------------------------------------
+       The .deb is not universally installable. It needs dpkg, so on Arch,
+       Fedora or openSUSE it cannot install at all — and because those
+       systems have nothing registered for the Debian package MIME type,
+       clicking the downloaded file falls through to the default handler,
+       which is the browser, which downloads it again. Recommending it to
+       every Linux visitor sent people into exactly that loop.
+
+       A browser cannot see the distribution. Chromium on Arch reports only
+       `X11; Linux x86_64` — no distro token, no hint, and User-Agent Client
+       Hints do not expose one either. Some builds DO name themselves
+       (Firefox on Ubuntu carries "Ubuntu"; Fedora, Debian, Manjaro and SUSE
+       builds often carry theirs), and that token is a statement rather than
+       an inference, so it is trusted when present.
+
+       When there is no token — the common case — this recommends the
+       AppImage, because it is the one file that runs everywhere. That is
+       the same principle the macOS card already follows: where the answer
+       cannot be known, do not confidently send someone the wrong file. The
+       cost of being wrong is asymmetric — an AppImage on Debian merely
+       skips launcher integration, while a .deb on Arch cannot be opened at
+       all.
+
+       Both downloads stay visible and usable regardless; this only decides
+       which one is styled as primary and what the hints say.            */
+    function recommendLinuxFormat(hayLower) {
+      var DEB_FAMILY = ['ubuntu', 'debian', 'linux mint', 'linuxmint', 'pop!_os', 'pop_os', 'popos', 'elementary', 'kubuntu', 'xubuntu', 'lubuntu', 'raspbian'];
+      var named = null;
+      for (var i = 0; i < DEB_FAMILY.length; i++) {
+        if (hayLower.indexOf(DEB_FAMILY[i]) !== -1) { named = DEB_FAMILY[i]; break; }
+      }
+
+      var debFirst = named !== null;
+      var deb = document.getElementById('dl-linux-deb');
+      var app = document.getElementById('dl-linux-appimage');
+      var hintDeb = document.getElementById('dl-hint-deb');
+      var hintApp = document.getElementById('dl-hint-appimage');
+      if (!deb || !app || !hintDeb || !hintApp) return;
+
+      deb.className = 'btn ' + (debFirst ? 'btn-primary' : 'btn-secondary');
+      app.className = 'btn ' + (debFirst ? 'btn-secondary' : 'btn-primary');
+
+      if (debFirst) {
+        hintDeb.textContent = 'Recommended — installs into your launcher';
+        hintApp.textContent = 'Portable — no installation';
+      } else {
+        hintDeb.textContent = 'Debian, Ubuntu, Mint, Pop!_OS only';
+        hintApp.textContent = 'Recommended — runs on any distribution';
+        var explain = document.getElementById('dl-explain-linux');
+        if (explain) {
+          explain.textContent = 'The AppImage runs on any distribution without installing — '
+            + 'make it executable and launch it. The .deb needs dpkg, so it installs on '
+            + 'Debian-family systems only; on Arch, Fedora or openSUSE there is nothing to '
+            + 'open it with.';
+        }
+      }
     }
   })();
 
