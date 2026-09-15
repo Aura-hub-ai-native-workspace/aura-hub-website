@@ -897,21 +897,25 @@
      Asset URLs are GitHub Release assets, which are permanent; Actions
      artifacts expire and are never used here.                          */
   var RELEASE = {
-    version: '0.1.5',
+    version: '0.1.12',
     repo: 'https://github.com/Aura-hub-ai-native-workspace/aura-hub',
     get releaseUrl() { return this.repo + '/releases/tag/v' + this.version; },
     get base() { return this.repo + '/releases/download/v' + this.version + '/'; },
     assets: {
-      linuxTarball:  'AURA-Hub-0.1.5-linux-x64.tar.gz',
-      linuxAppImage: 'AURA-Hub-0.1.5-linux-x64.AppImage',
-      linuxDeb:      'AURA-Hub-0.1.5-linux-x64.deb',
-      windows:       'AURA-Hub-0.1.5-windows-x64.exe',
-      macosArm64:    'AURA-Hub-0.1.5-macos-arm64.dmg',
-      macosX64:      'AURA-Hub-0.1.5-macos-x64.dmg'
+      linuxTarball:  'AURA-Hub-0.1.12-linux-x64.tar.gz',
+      linuxAppImage: 'AURA-Hub-0.1.12-linux-x64.AppImage',
+      linuxDeb:      'AURA-Hub-0.1.12-linux-x64.deb',
+      windows:       'AURA-Hub-0.1.12-windows-x64.exe',
+      macosArm64:    'AURA-Hub-0.1.12-macos-arm64.dmg',
+      macosX64:      'AURA-Hub-0.1.12-macos-x64.dmg'
     },
+    /* Read from the published release, not estimated. 0.1.11 began
+       shipping a Python interpreter and 0.1.12 added a Node runtime, so
+       every download is several times its old size — a visitor on a
+       metered connection should see that before clicking, not after. */
     sizes: {
-      linuxTarball: '78 MB', linuxAppImage: '78 MB', linuxDeb: '6.9 MB',
-      windows: '5.9 MB', macosArm64: '7.3 MB', macosX64: '7.4 MB'
+      linuxTarball: '136.4 MB', linuxAppImage: '137.2 MB', linuxDeb: '95.7 MB',
+      windows: '37.9 MB', macosArm64: '73.8 MB', macosX64: '75.1 MB'
     }
   };
 

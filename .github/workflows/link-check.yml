@@ -17,9 +17,19 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
+          # `--exclude-mail` was removed from lychee; passing it makes the
+          # run abort in seconds with "unexpected argument" before a single
+          # link is checked. Every run of this workflow since it was added
+          # has failed that way, so the site has never actually been link
+          # checked. Mail links are excluded by default now, so dropping
+          # the flag restores exactly the intended behaviour.
+          #
+          # `--root-dir` resolves the root-relative links these pages use —
+          # 404.html links home as "/" — which lychee otherwise reports as
+          # unresolvable rather than following to the checked-out site.
           args: >-
             --no-progress
-            --exclude-mail
+            --root-dir ${{ github.workspace }}
             --exclude "^https://aurahub\.is-a\.dev"
             index.html 404.html README.md
           fail: true
