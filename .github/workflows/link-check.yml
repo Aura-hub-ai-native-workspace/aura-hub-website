@@ -17,9 +17,14 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
+          # `--exclude-mail` was removed from lychee; passing it makes the
+          # run abort in seconds with "unexpected argument" before a single
+          # link is checked. Every run of this workflow since it was added
+          # has failed that way, so the site has never actually been link
+          # checked. Mail links are excluded by default now, so dropping
+          # the flag restores exactly the intended behaviour.
           args: >-
             --no-progress
-            --exclude-mail
             --exclude "^https://aurahub\.is-a\.dev"
             index.html 404.html README.md
           fail: true
