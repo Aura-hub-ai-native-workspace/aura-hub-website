@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DAQ-language theme, AURA content.
+ * Pure black, condensed grotesk display (outline ↔ solid),
+ * mono microcopy, hairline rules. */
+
+:root {
+  --ink: #000000;
+  --paper: #f4f1ec;
+  --navy: #1b2360;
+  --signal: #f43f7e;
+  --line: rgba(255, 255, 255, 0.14);
+  --line-dark: rgba(0, 0, 0, 0.14);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html {
+  scroll-behavior: auto;
+  background: var(--ink);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+html, body, #root {
+  min-height: 100%;
+  margin: 0;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--signal);
+  color: #fff;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-stretch: 78%;
+  }
+  .font-display-wide {
+    font-family: var(--font-display);
+    font-stretch: 100%;
+  }
+  .font-mono2 {
+    font-family: var(--font-mono);
+  }
+  /* Hollow display type — fills solid on scroll. */
+  .text-hollow {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.72);
+  }
+  @media (min-width: 640px) {
+    .text-hollow {
+      -webkit-text-stroke-width: 2px;
+    }
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-x 38s linear infinite;
+  will-change: transform;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee-track {
+    animation: none !important;
+  }
+}
