@@ -1,0 +1,15 @@
+# Legacy asset compat — old /assets/* image URLs from the pre-v2 static site
+# redirect permanently to their new locations. Verified against
+# https://developers.cloudflare.com/workers/static-assets/redirects/
+# (static 301 supported; this file is parsed, not served).
+/assets/brand/aura-logo.png /brand/aura-logo.png 301
+/assets/screenshots/01-app-shell-home.png /screenshots/01-app-shell-home.png 301
+/assets/screenshots/03-ai-chat.png /screenshots/03-ai-chat.png 301
+/assets/screenshots/04-mission-control.png /screenshots/04-mission-control.png 301
+/assets/screenshots/07-automation-studio.png /screenshots/07-automation-studio.png 301
+/assets/screenshots/08-knowledge-graph.png /screenshots/08-knowledge-graph.png 301
+/assets/screenshots/09-architecture-blueprint.png /screenshots/09-architecture-blueprint.png 301
+/assets/screenshots/10-engineering-memory.png /screenshots/10-engineering-memory.png 301
+/assets/screenshots/11-engineering-governance.png /screenshots/11-engineering-governance.png 301
+/assets/screenshots/12-provider-settings.png /screenshots/12-provider-settings.png 301
+/assets/screenshots/13-command-palette.png /screenshots/13-command-palette.png 301
